@@ -106,7 +106,7 @@ RotationMatrix::RotationMatrix(double theta):Matrix(2,2)
     a[1][1]=cos(theta);
 }
 
-ScalingMatrix::ScalingMatrix(double scale):MAtrix(2,2)
+ScalingMatrix::ScalingMatrix(double scale):Matrix(2,2)
 {
     a[0][0]=scale;
     a[0][1]=0;
@@ -114,7 +114,7 @@ ScalingMatrix::ScalingMatrix(double scale):MAtrix(2,2)
     a[1][1]=scale;
 }
 
-TranslationMatrix::TranslationMatrix(double xShift, double yShift, int nCols):MAtrix(2,nCols)
+TranslationMatrix::TranslationMatrix(double xShift, double yShift, int nCols):Matrix(2,nCols)
 {
     for(int i=0;i<nCols;i++)
     {
