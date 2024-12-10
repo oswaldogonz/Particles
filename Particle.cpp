@@ -1,13 +1,5 @@
 #include "Particle.h"
 
-#define M_PI 3.1415926535897932384626433
-const float G = 1000; //Gravity
-const float TTL = 5.0; //Time To Live
-const float SCALE = 0.999;
-using namespace Matrices;
-using namespace sf;
-
-
 Particle::Particle(RenderTarget& target, int numPoints, Vector2i mouseClickPosition): m_A(2, numPoints)
 {
   m_ttl=TTL;
@@ -27,58 +19,73 @@ Particle::Particle(RenderTarget& target, int numPoints, Vector2i mouseClickPosit
   {
     int r=rand()%61+20;
     int dx=r*cos(theta);
-    int dy=r*sin(theta)
+    int dy=r*sin(theta);
     m_A(0,j)=m_centerCoordinate.x+dx;
     m_A(1,j)=m_centerCoordinate.y+dy;
-    theta+=dThat;
+    theta+=dTheta;
   } 
 }
 
-virtual void draw(RenderTarget& target, RenderStates states) const override
+void Particle::draw(RenderTarget& target, RenderStates states) const
 {
+  VertexArray lines(TriangleFan, m_numPoints+1);
+  Vector2f center=target.mapCoordsToPixel(m_centerCoordinate, m_cartesianPlane);
+  lines[0].position=center;
+  lines[0].color=m_color1;
+  for(int j=1;j<=m_numPoints;j++)
+  {
+    lines[j].position=target.mapCoordsToPixel(Vector2f(m_A(0,j-1),m_A(1,j-1),m_cartesianPlane);
+    lines[j].color=m_Color2;
+  }
+  target.draw(lines);
+      
 }
-This function overrides the virtual function from sf::Drawable to allow our draw function to polymorph
-To draw, we will convert our Cartesian matrix coordinates from m_A to pixel coordinates in a VertexArray of primitive type TriangleFan
-Take a look at the SFML tutorial regarding the TriangleFanLinks to an external site. and refer to the picture below:
-Triangle fan diagram
 
-Construct a VertexArray named lines
-Its arguments are TriangleFan, and the number of points numPoints + 1
-The + 1 is to account for the center as shown above
-Declare a local Vector2f named center
-This will be used to store the location on the monitor of the center of our particle
-Assign it with the mapping of m_centerCoordinate from Cartesian to pixel / monitor coordinates using target.mapCoordsToPixelLinks to an external site.
-Don't forget to pass m_cartesianPlane in as an argument!
-Assign lines[0].position with center
-Assign lines[0].color with m_color
-This will assign m_color to the center of our particle.  If the outer colors are different, the engine will automatically create a cool looking smooth color gradient between the two colors
-Loop j from 1 up to and including m_numPoints
-Note that the index in lines is 1-off from the index in m_A because lines must contain the pixel coordinate for the center as its first element
-Assign lines[j].position with the coordinate from column j - 1 in m_A, mapped from Cartesian to pixel coordinates using target.mapCoordsToPixelLinks to an external site.
-Don't forget to pass m_cartesianPlane in as an argument!
-Assign lines[j].color with m_Color2
-When the loop is finished, draw the VertexArray:
-target.draw(lines)
-    void update(float dt);
-    float getTTL() { return m_ttl; }
-    //Functions for unit testing
-    bool almostEqual(double a, double b, double eps = 0.0001);
-    void unitTests();
-  
-    ///rotate Particle by theta radians counter-clockwise
-    ///construct a RotationMatrix R, left mulitply it to m_A
-    void rotate(double theta);
-    ///Scale the size of the Particle by factor c
-    ///construct a ScalingMatrix S, left multiply it to m_A
-    void scale(double c);
-    ///shift the Particle by (xShift, yShift) coordinates
-    ///construct a TranslationMatrix T, add it to m_A
-    void translate(double xShift, double yShift);
-};
+void Particle::update(float dt)
+{
+  m_ttle-=dt;
+  rotate(dt*m_radiansPerSec);
+  scale(SCALE);
+  float dx=m_vx*dt;
+  m_vy-=G*dt;
+  float dy=m_vy*dt;
+  translate(dx,dy);
+}
+
+
+void Particle::translate(double xShift, double yShift)
+{
+  TranslationMatrix T(xShift, yShift, m_numPoints);
+  m_A=T+m_A;
+  m_centerCoordinate.x += xShift;
+  m_centerCoordinate.y += yShift;
+}
+
+void PArticle::rotate(double theta)
+{
+  Vector2f temp=m_centerCoordinate;
+  translate(-m_centerCoordinate.x, -m_centerCoordinate.y);
+  RotationMatrix R(theta);
+  m_A=R*m_A;
+  translate(temp.x, temp.y);
+}
+
+///Scale the size of the Particle by factor c
+///construct a ScalingMatrix S, left multiply it to m_A
+void Particle::scale(double c)
+{
+  Vector2f temp=m_centerCoordinate;
+  translate(-m_centerCoordinate.x, -m_centerCoordinate.y);
+  ScalingMatrix S(c);
+  m_A =S*m_A;
+  translate(temp.x, temp.y);
+}
+
 bool Particle::almostEqual(double a, double b, double eps)
 {
   return fabs(a - b) < eps;
 }
+
 void Particle::unitTests()
 {
   int score = 0;
