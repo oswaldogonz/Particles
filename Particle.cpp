@@ -4,7 +4,7 @@ Particle::Particle(RenderTarget& target, int numPoints, Vector2i mouseClickPosit
 {
   m_ttl=TTL;
   m_numPoints=numPoints;
-  m_radiansPerSec=(float)rand()/(RAND_MAX)*PI;
+  m_radiansPerSec=(float)rand()/(RAND_MAX)*M_PI;
   m_cartesianPlane.setCenter(0,0);
   m_cartesianPlane.setSize(target.getSize().x, (-1.0) * target.getSize().y);
   m_centerCoordinate=target.mapPixelToCoords(mouseClickPosition, m_cartesianPlane);
@@ -13,8 +13,8 @@ Particle::Particle(RenderTarget& target, int numPoints, Vector2i mouseClickPosit
   m_color1=Color::White;
   m_color2=Color::White;//maybe change
 
-  theta=(float)rand()/(RAND_MAX)*(PI/2);
-  dTheta=2*PI/(numPoints-1);
+  float theta=(float)rand()/(RAND_MAX)*(M_PI/2);
+  float dTheta=2*M_PI/(numPoints-1);
   for(int j=0;j<numPoints;j++)
   {
     int r=rand()%61+20;
@@ -34,8 +34,8 @@ void Particle::draw(RenderTarget& target, RenderStates states) const
   lines[0].color=m_color1;
   for(int j=1;j<=m_numPoints;j++)
   {
-    lines[j].position=target.mapCoordsToPixel(Vector2f(m_A(0,j-1),m_A(1,j-1),m_cartesianPlane);
-    lines[j].color=m_Color2;
+    lines[j].position=target.mapCoordsToPixel(Vector2f(m_A(0,j-1),m_A(1,j-1)),m_cartesianPlane);
+    lines[j].color=m_color2;
   }
   target.draw(lines);
       
@@ -43,7 +43,7 @@ void Particle::draw(RenderTarget& target, RenderStates states) const
 
 void Particle::update(float dt)
 {
-  m_ttle-=dt;
+  m_ttl-=dt;
   rotate(dt*m_radiansPerSec);
   scale(SCALE);
   float dx=m_vx*dt;
@@ -61,7 +61,7 @@ void Particle::translate(double xShift, double yShift)
   m_centerCoordinate.y += yShift;
 }
 
-void PArticle::rotate(double theta)
+void Particle::rotate(double theta)
 {
   Vector2f temp=m_centerCoordinate;
   translate(-m_centerCoordinate.x, -m_centerCoordinate.y);
